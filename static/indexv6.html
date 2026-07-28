@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Mask Detection System</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            background:#000;
+            color:#fff;
+            font-family:Segoe UI,Tahoma,sans-serif;
+            display:flex;
+            height:100vh;
+        }
+
+        .left-column{
+            flex:1.5;
+            padding:20px;
+            border-right:1px solid #333;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .right-column{
+            flex:1;
+            padding:20px;
+            background:#0a0a0a;
+            display:flex;
+            flex-direction:column;
+        }
+
+        h2{
+            color:#00ff88;
+            margin-bottom:20px;
+        }
+
+        input[type=file],
+        input[type=text]{
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            background:#222;
+            color:white;
+            border:1px solid #444;
+            border-radius:6px;
+        }
+
+        button{
+            margin-top:10px;
+            padding:12px;
+            width:100%;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:bold;
+            background:#00ff88;
+            color:#000;
+        }
+
+        button:hover{
+            opacity:0.9;
+        }
+
+        .comparison-view{
+            display:flex;
+            gap:20px;
+            margin-top:20px;
+        }
+
+        .img-box{
+            flex:1;
+            border:1px solid #444;
+            border-radius:8px;
+            padding:10px;
+            background:#111;
+            text-align:center;
+        }
+
+        .img-box p{
+            margin-bottom:10px;
+            color:#888;
+            font-size:14px;
+        }
+
+        img{
+            width:100%;
+            border-radius:5px;
+            display:none;
+        }
+
+        #chatOutput{
+            flex:1;
+            overflow-y:auto;
+            background:#000;
+            border:1px solid #333;
+            padding:15px;
+            border-radius:6px;
+            color:#ddd;
+            margin-bottom:10px;
+        }
+
+        .chat-user{
+            color:#00ff88;
+            margin-top:15px;
+        }
+
+        .chat-ai{
+            margin-top:5px;
+            margin-bottom:15px;
+            color:#fff;
+        }
+
+        #status{
+            margin-top:10px;
+            color:#00ff88;
+            font-size:14px;
+        }
+        .chat-message{
+    margin-top:15px;
+    padding:12px;
+    border-radius:8px;
+    line-height:1.6;
+    max-width:95%;
+    word-wrap:break-word;
+}
+
+
+.chat-user{
+    background:#003d2a;
+    color:#00ff88;
+    margin-left:auto;
+    text-align:right;
+}
+
+
+.chat-ai{
+    background:#111;
+    border:1px solid #333;
+    color:#ddd;
+    white-space:pre-wrap;
+    text-align:left;
+}
+
+
+.chat-ai b{
+    color:#00ff88;
+}
+
+
+.chat-ai ul{
+    margin-left:25px;
+}
+
+
+.chat-ai ol{
+    margin-left:25px;
+}
+
+
+.chat-ai code{
+    background:#222;
+    padding:4px;
+    border-radius:4px;
+    color:#00ff88;
+}
+
+
+.chat-ai pre{
+    background:#000;
+    padding:10px;
+    border-radius:5px;
+    overflow-x:auto;
+}
+
+    </style>
+</head>
+
+<body>
+
+<div class="left-column">
+
+    <h2>🎯 Face Mask Detection</h2>
+
+    <input
+        type="file"
+        id="imageInput"
+        accept="image/*">
+
+    <button onclick="runInference()">
+        Run YOLO Detection
+    </button>
+
+    <div id="status"></div>
+
+    <div class="comparison-view">
+
+        <div class="img-box">
+            <p>ORIGINAL IMAGE</p>
+            <img
+                id="originalImg"
+                alt="Original">
+        </div>
+
+        <div class="img-box">
+            <p>DETECTED IMAGE</p>
+            <img
+                id="detectedImg"
+                alt="Detected">
+        </div>
+
+    </div>
+
+</div>
+
+<div class="right-column">
+
+    <h2>🤖 AI Assistant</h2>
+
+    <div id="chatOutput">
+        Ask anything about your Face Mask Detection project.
+    </div>
+
+    <input
+        id="userInput"
+        type="text"
+        placeholder="Ask a question...">
+
+    <button onclick="sendQuery()">
+        Ask AI
+    </button>
+
+</div>
+
+    <script>
+               async function runInference() {
+
+        const fileInput = document.getElementById("imageInput");
+        const originalImg = document.getElementById("originalImg");
+        const detectedImg = document.getElementById("detectedImg");
+        const status = document.getElementById("status");
+
+        // Check if a file is selected
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert("Please select an image first.");
+            return;
+        }
+
+        // IMPORTANT:
+        // fileInput.files is a FileList
+        // createObjectURL() requires a File object
+        const file = fileInput.files[0];
+
+        // Display original image
+        originalImg.src = URL.createObjectURL(file);
+        originalImg.style.display = "block";
+
+        // Hide previous detection image
+        detectedImg.style.display = "none";
+        detectedImg.src = "";
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("conf", "0.5");
+        formData.append("iou", "0.45");
+        formData.append("enhance", "false");
+
+        status.innerHTML = "Running YOLO inference...";
+
+        try {
+
+            const response = await fetch("/detect", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+
+                const err = await response.text();
+                throw new Error(err);
+
+            }
+
+            const data = await response.json();
+
+            console.log(data);
+
+            if (data.image_base64) {
+
+                detectedImg.src = data.image_base64;
+                detectedImg.style.display = "block";
+
+            }
+            else if (data.processed_image_url) {
+
+                detectedImg.src = data.processed_image_url;
+                detectedImg.style.display = "block";
+
+            }
+            else {
+
+                alert("Backend did not return a processed image.");
+
+            }
+
+            status.innerHTML =
+                "Detection completed. Objects found: " +
+                (data.detections ? data.detections.length : 0);
+
+        }
+        catch(error){
+
+            console.error(error);
+
+            status.innerHTML = "Detection failed.";
+
+            alert(error.message);
+
+        }
+
+    }
+    async function sendQuery(){
+
+    const query = document
+        .getElementById("userInput")
+        .value
+        .trim();
+
+
+    if(query === "")
+        return;
+
+
+    const chatOutput =
+        document.getElementById("chatOutput");
+
+
+    chatOutput.innerHTML +=
+    `
+    <div class="chat-message chat-user">
+        <b>You:</b><br>
+        ${query}
+    </div>
+    `;
+
+
+    const formData = new FormData();
+
+    formData.append(
+        "question",
+        query
+    );
+
+
+    document.getElementById("userInput").value="";
+
+
+    try{
+
+
+        const response = await fetch(
+            "/chat",
+            {
+                method:"POST",
+                body:formData
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+
+        /*
+          Convert markdown-like AI response
+          into readable HTML
+        */
+
+        let formattedAnswer =
+            result.answer
+            .replace(
+                /\n\n/g,
+                "<br><br>"
+            )
+            .replace(
+                /\n/g,
+                "<br>"
+            )
+            .replace(
+                /\*\*(.*?)\*\*/g,
+                "<b>$1</b>"
+            )
+            .replace(
+                /`(.*?)`/g,
+                "<code>$1</code>"
+            );
+
+
+
+        chatOutput.innerHTML +=
+        `
+        <div class="chat-message chat-ai">
+
+            <b>🤖 AI:</b>
+
+            <br><br>
+
+            ${formattedAnswer}
+
+        </div>
+        `;
+
+
+
+        chatOutput.scrollTop =
+            chatOutput.scrollHeight;
+
+
+    }
+
+
+    catch(error){
+
+
+        chatOutput.innerHTML +=
+        `
+        <div class="chat-message chat-ai"
+             style="color:red">
+
+            Error connecting to AI Assistant.
+
+        </div>
+        `;
+
+
+    }
+
+}
+
+    
+
+    
+    </script>
+
+</body>
+</html>

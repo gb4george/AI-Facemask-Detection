@@ -1,0 +1,1974 @@
+from "mainvdv1.py" file
+# ==========================================
+# IMPORTS
+# ==========================================
+
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    StreamingResponse
+)
+
+import uvicorn
+import os
+import cv2
+import numpy as np
+import base64
+
+from pathlib import Path
+
+from ultralytics import YOLO
+
+from docx import Document
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+from dotenv import load_dotenv
+
+from groq import Groq
+
+
+
+# ==========================================
+# CONFIGURATION
+# ==========================================
+
+
+BASE_DIR = Path(__file__).resolve().parent
+
+
+
+# YOLO MODEL
+
+MODEL_PATH = BASE_DIR / "fmdv2.pt"
+
+
+
+# DOCUMENT FOR RAG CHAT
+
+DOC_PATH = (
+    BASE_DIR /
+    "facemaskrprojectdocument.docx"
+)
+
+
+
+# FRONTEND
+
+STATIC_DIR = (
+    BASE_DIR /
+    "static"
+)
+
+
+
+# ==========================================
+# LIVE WEBCAM CONFIGURATION
+# ==========================================
+
+
+CAMERA_INDEX = 0
+
+
+FRAME_WIDTH = 640
+
+FRAME_HEIGHT = 480
+
+
+
+# YOLO FILTERS
+
+CONF_THRESHOLD = 0.50
+
+IOU_THRESHOLD = 0.45
+
+
+
+# ==========================================
+# LOAD ENVIRONMENT
+# ==========================================
+
+
+load_dotenv()
+
+
+GROQ_API_KEY = os.getenv(
+    "GROQ_API_KEY"
+)
+
+
+
+# ==========================================
+# FASTAPI APPLICATION
+# ==========================================
+
+
+app = FastAPI(
+
+    title="Face Mask Detection + AI Chat",
+
+    version="2.0"
+
+)
+
+
+
+# ==========================================
+# LOAD YOLO MODEL
+# ==========================================
+
+
+def load_model():
+
+
+    if not MODEL_PATH.exists():
+
+        raise RuntimeError(
+
+            f"YOLO model not found: {MODEL_PATH}"
+
+        )
+
+
+    return YOLO(
+
+        str(MODEL_PATH)
+
+    )
+
+
+
+model = load_model()
+
+
+
+# ==========================================
+# INITIALIZE WEBCAM
+# ==========================================
+
+
+camera = cv2.VideoCapture(
+    CAMERA_INDEX
+)
+
+
+
+camera.set(
+
+    cv2.CAP_PROP_FRAME_WIDTH,
+
+    FRAME_WIDTH
+
+)
+
+
+
+camera.set(
+
+    cv2.CAP_PROP_FRAME_HEIGHT,
+
+    FRAME_HEIGHT
+
+)
+
+
+
+if not camera.isOpened():
+
+    raise RuntimeError(
+
+        "Cannot access webcam"
+
+    )
+
+
+
+print("Webcam started successfully")
+
+print(
+    f"Resolution: {FRAME_WIDTH}x{FRAME_HEIGHT}"
+)
+
+print(
+    f"Confidence threshold: {CONF_THRESHOLD}"
+)
+
+print(
+    f"IoU threshold: {IOU_THRESHOLD}"
+)
+# ==========================================
+# LOW LIGHT IMAGE ENHANCEMENT
+# ==========================================
+
+
+def enhance_low_light(frame):
+
+    """
+    CLAHE enhancement for
+    dim / grainy webcam conditions.
+    """
+
+
+    lab = cv2.cvtColor(
+
+        frame,
+
+        cv2.COLOR_BGR2LAB
+
+    )
+
+
+    l, a, b = cv2.split(lab)
+
+
+
+    clahe = cv2.createCLAHE(
+
+        clipLimit=2.0,
+
+        tileGridSize=(8, 8)
+
+    )
+
+
+
+    enhanced_l = clahe.apply(l)
+
+
+
+    enhanced = cv2.merge(
+
+        (
+
+            enhanced_l,
+
+            a,
+
+            b
+
+        )
+
+    )
+
+
+
+    enhanced = cv2.cvtColor(
+
+        enhanced,
+
+        cv2.COLOR_LAB2BGR
+
+    )
+
+
+    return enhanced
+
+
+
+
+# ==========================================
+# YOLO LIVE FRAME PROCESSING
+# ==========================================
+
+
+def detect_live_frame(frame):
+
+    """
+    Process one webcam frame.
+
+    Pipeline:
+    Webcam
+       |
+    Resize 640x480
+       |
+    CLAHE enhancement
+       |
+    YOLO inference
+       |
+    Draw detections
+    """
+
+
+
+    # --------------------------------------
+    # Resize for lower latency
+    # --------------------------------------
+
+
+    frame = cv2.resize(
+
+        frame,
+
+        (
+            FRAME_WIDTH,
+            FRAME_HEIGHT
+        )
+
+    )
+
+
+
+    # --------------------------------------
+    # Improve low-light webcam quality
+    # --------------------------------------
+
+
+    frame = enhance_low_light(
+
+        frame
+
+    )
+
+
+
+    # --------------------------------------
+    # YOLO inference
+    # --------------------------------------
+
+
+    results = model(
+
+        frame,
+
+        conf=CONF_THRESHOLD,
+
+        iou=IOU_THRESHOLD,
+
+        verbose=False
+
+    )
+
+
+
+    result = results[0]
+
+
+
+    # --------------------------------------
+    # Process detections
+    # --------------------------------------
+
+
+    for box in result.boxes:
+
+
+
+        x1, y1, x2, y2 = map(
+
+            int,
+
+            box.xyxy[0].tolist()
+
+        )
+
+
+
+        class_id = int(
+
+            box.cls.item()
+
+        )
+
+
+
+        confidence = float(
+
+            box.conf.item()
+
+        )
+
+
+
+        # ------------------------------
+        # Class labels
+        # ------------------------------
+
+
+        if class_id == 0:
+
+
+            label = "Mask"
+
+            color = (
+
+                0,
+
+                255,
+
+                0
+
+            )
+
+
+
+        elif class_id == 1:
+
+
+            label = "Incorrect Mask"
+
+            color = (
+
+                0,
+
+                165,
+
+                255
+
+            )
+
+
+
+        else:
+
+
+            label = "No Mask"
+
+            color = (
+
+                0,
+
+                0,
+
+                255
+
+            )
+
+
+
+        text = (
+
+            f"{label} "
+
+            f"{confidence:.2f}"
+
+        )
+
+
+
+        # ------------------------------
+        # Draw bounding box
+        # ------------------------------
+
+
+        cv2.rectangle(
+
+            frame,
+
+            (x1, y1),
+
+            (x2, y2),
+
+            color,
+
+            2
+
+        )
+
+
+
+        # ------------------------------
+        # Draw label
+        # ------------------------------
+
+
+        cv2.putText(
+
+            frame,
+
+            text,
+
+            (
+
+                x1,
+
+                y1 - 10
+
+            ),
+
+            cv2.FONT_HERSHEY_SIMPLEX,
+
+            0.6,
+
+            color,
+
+            2
+
+        )
+
+
+
+    return frame
+# ==========================================
+# LIVE VIDEO FRAME GENERATOR
+# ==========================================
+
+
+def generate_frames():
+
+    """
+    Continuously captures webcam frames,
+    runs YOLO detection,
+    and streams processed frames.
+    """
+
+
+    while True:
+
+
+        success, frame = camera.read()
+
+
+
+        if not success:
+
+            print(
+                "Failed to read webcam frame"
+            )
+
+            break
+
+
+
+        # Run detection
+
+        processed_frame = detect_live_frame(
+
+            frame
+
+        )
+
+
+
+        # Encode frame as JPEG
+
+
+        ret, buffer = cv2.imencode(
+
+            ".jpg",
+
+            processed_frame
+
+        )
+
+
+
+        if not ret:
+
+            continue
+
+
+
+        frame_bytes = buffer.tobytes()
+
+
+
+        # MJPEG streaming format
+
+
+        yield (
+
+            b"--frame\r\n"
+
+            b"Content-Type: image/jpeg\r\n\r\n"
+
+            +
+
+            frame_bytes
+
+            +
+
+            b"\r\n"
+
+        )
+
+
+
+
+# ==========================================
+# LIVE CAMERA STREAM ENDPOINT
+# ==========================================
+
+
+@app.get("/video_feed")
+async def video_feed():
+
+
+    return StreamingResponse(
+
+        generate_frames(),
+
+        media_type=
+
+        "multipart/x-mixed-replace; boundary=frame"
+
+    )
+# ==========================================
+# LOAD PROJECT DOCUMENT FOR RAG
+# ==========================================
+
+
+def load_project_doc():
+
+    """
+    Reads project documentation
+    and creates TF-IDF vectors.
+    """
+
+
+    if not DOC_PATH.exists():
+
+        print(
+            "Documentation file not found"
+        )
+
+        return [], None
+
+
+
+    doc = Document(
+
+        str(DOC_PATH)
+
+    )
+
+
+
+    paragraphs = [
+
+        p.text.strip()
+
+        for p in doc.paragraphs
+
+        if p.text.strip()
+
+    ]
+
+
+
+    if not paragraphs:
+
+        return [], None
+
+
+
+    vectorizer = TfidfVectorizer(
+
+        stop_words="english"
+
+    )
+
+
+
+    vectors = vectorizer.fit_transform(
+
+        paragraphs
+
+    )
+
+
+
+    return paragraphs, (
+
+        vectorizer,
+
+        vectors
+
+    )
+
+
+
+
+
+doc_chunks, doc_index = load_project_doc()
+
+
+
+
+# ==========================================
+# DOCUMENT RETRIEVAL
+# ==========================================
+
+
+def retrieve_relevant_chunk(query: str):
+
+    """
+    Finds the most relevant
+    paragraph from project document.
+    """
+
+
+    if not doc_chunks or doc_index is None:
+
+        return ""
+
+
+
+    vectorizer, doc_vectors = doc_index
+
+
+
+    query_vector = vectorizer.transform(
+
+        [query]
+
+    )
+
+
+
+    similarity = cosine_similarity(
+
+        query_vector,
+
+        doc_vectors
+
+    )[0]
+
+
+
+    best_index = similarity.argmax()
+
+
+
+    return doc_chunks[best_index]
+
+
+
+
+
+# ==========================================
+# GROQ AI FUNCTION
+# ==========================================
+
+
+def call_llm(
+
+    system_prompt,
+
+    context,
+
+    question
+
+):
+
+
+    if not GROQ_API_KEY:
+
+
+        return (
+
+            "Groq API key missing. "
+
+            "Add GROQ_API_KEY in .env"
+
+        )
+
+
+
+    try:
+
+
+        client = Groq(
+
+            api_key=GROQ_API_KEY
+
+        )
+
+
+
+        messages = [
+
+            {
+
+                "role": "system",
+
+                "content": system_prompt
+
+            },
+
+
+            {
+
+                "role": "assistant",
+
+                "content":
+
+                (
+
+                    "Project documentation:\n\n"
+
+                    +
+
+                    context
+
+                )
+
+            },
+
+
+            {
+
+                "role": "user",
+
+                "content": question
+
+            }
+
+        ]
+
+
+
+        response = client.chat.completions.create(
+
+            model="llama-3.3-70b-versatile",
+
+            messages=messages
+
+        )
+
+
+
+        return (
+
+            response
+
+            .choices[0]
+
+            .message
+
+            .content
+
+        )
+
+
+
+    except Exception as e:
+
+
+        return (
+
+            f"AI Error: {str(e)}"
+
+        )
+
+
+
+
+
+# ==========================================
+# AI CHAT ENDPOINT
+# ==========================================
+
+
+@app.post("/chat")
+async def chat(
+
+    question: str = Form(...)
+
+):
+
+
+    try:
+
+
+        context = retrieve_relevant_chunk(
+
+            question
+
+        )
+
+
+
+        system_prompt = (
+
+            "You are an AI tutor for a "
+
+            "Face Mask Detection project "
+
+            "using YOLO, OpenCV, FastAPI, "
+
+            "and RAG. "
+
+            "Explain answers clearly "
+
+            "with proper formatting."
+
+        )
+
+
+
+        answer = call_llm(
+
+            system_prompt,
+
+            context,
+
+            question
+
+        )
+
+
+
+        return {
+
+            "answer": answer
+
+        }
+
+
+
+    except Exception as e:
+
+
+        return JSONResponse(
+
+            status_code=500,
+
+            content={
+
+                "error":
+
+                str(e)
+
+            }
+
+        )
+    # ==========================================
+# FRONTEND SERVER
+# ==========================================
+
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_index():
+
+    """
+    Serves the live webcam HTML interface.
+    """
+
+
+    html_path = (
+
+        STATIC_DIR /
+
+        "indexvdv1.html"
+
+    )
+
+
+
+    if not html_path.exists():
+
+
+        return HTMLResponse(
+
+            content=
+
+            "<h1>indexvdv1.html not found</h1>",
+
+            status_code=404
+
+        )
+
+
+
+    return HTMLResponse(
+
+        html_path.read_text(
+
+            encoding="utf-8"
+
+        )
+
+    )
+
+
+
+
+# ==========================================
+# CLEANUP WEBCAM
+# ==========================================
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+
+    """
+    Release webcam when server stops.
+    """
+
+
+    if camera.isOpened():
+
+        camera.release()
+
+
+
+    cv2.destroyAllWindows()
+
+
+
+
+# ==========================================
+# APPLICATION START
+# ==========================================
+
+
+if __name__ == "__main__":
+
+
+    uvicorn.run(
+
+        "mainvdv1:app",
+
+        host="0.0.0.0",
+
+        port=8000,
+
+        reload=True
+
+    )
+
+
+from "indexvdv1.html" file
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+Live Face Mask Detection + AI Chat
+</title>
+
+
+<style>
+
+body{
+
+    background:#000;
+
+    color:white;
+
+    font-family:
+    'Segoe UI',
+    sans-serif;
+
+    margin:0;
+
+    height:100vh;
+
+    display:flex;
+
+}
+
+
+/* LEFT CAMERA SECTION */
+
+.left-panel{
+
+    flex:1.5;
+
+    padding:20px;
+
+    border-right:1px solid #333;
+
+}
+
+
+.right-panel{
+
+    flex:1;
+
+    padding:20px;
+
+    background:#0b0b0b;
+
+}
+
+
+
+h2{
+
+    color:#00ff88;
+
+}
+
+
+
+/* CAMERA DISPLAY */
+
+.camera-box{
+
+    background:#111;
+
+    border:2px solid #333;
+
+    border-radius:10px;
+
+    padding:15px;
+
+    text-align:center;
+
+}
+
+
+
+.camera-box img{
+
+    width:100%;
+
+    max-width:640px;
+
+    border-radius:8px;
+
+}
+
+
+
+/* STATUS */
+
+.status{
+
+    margin-top:15px;
+
+    padding:10px;
+
+    background:#111;
+
+    border-radius:6px;
+
+    color:#00ff88;
+
+}
+
+
+
+/* CHAT AREA */
+
+
+#chatOutput{
+
+    height:70vh;
+
+    overflow-y:auto;
+
+    background:#000;
+
+    border:1px solid #333;
+
+    padding:15px;
+
+    border-radius:8px;
+
+}
+
+
+
+input{
+
+    width:75%;
+
+    padding:12px;
+
+    margin-top:10px;
+
+    background:#222;
+
+    color:white;
+
+    border:1px solid #444;
+
+    border-radius:5px;
+
+}
+
+
+
+button{
+
+    width:20%;
+
+    padding:12px;
+
+    background:#00ff88;
+
+    color:black;
+
+    border:none;
+
+    border-radius:5px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+
+.chat-message{
+
+    margin:10px 0;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    line-height:1.6;
+
+    white-space:pre-wrap;
+
+}
+
+
+
+.user{
+
+    background:#003d2a;
+
+    text-align:right;
+
+}
+
+
+
+.ai{
+
+    background:#151515;
+
+    border:1px solid #333;
+
+}
+
+
+
+.ai b{
+
+    color:#00ff88;
+
+}
+.camera-box button{
+
+    width:40%;
+
+    margin:10px;
+
+    padding:12px;
+
+    background:#00ff88;
+
+    color:black;
+
+    border:none;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+.camera-box button:last-child{
+
+    background:#ff4444;
+
+    color:white;
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+
+<!-- ======================
+     LIVE DETECTION
+======================= -->
+
+
+<div class="left-panel">
+
+
+<h2>
+🎥 Live Face Mask Detection
+</h2>
+
+
+<div class="camera-box">
+
+
+<img
+
+id="cameraFeed"
+
+src=""
+
+alt="Camera Feed"
+
+>
+
+
+<br><br>
+
+
+<button onclick="startCamera()">
+
+▶ Start Webcam
+
+</button>
+
+
+<button onclick="stopCamera()">
+
+⏹ Stop Webcam
+
+</button>
+
+
+</div>
+
+
+
+<div class="status">
+
+🟢 Webcam Active
+
+<br>
+
+Model:
+YOLO Face Mask Detector
+
+<br>
+
+Resolution:
+640 × 480
+
+<br>
+
+Optimization:
+CLAHE + IoU Filtering
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- ======================
+     AI CHAT
+======================= -->
+
+
+<div class="right-panel">
+
+
+<h2>
+🤖 AI Project Assistant
+</h2>
+
+
+
+<div id="chatOutput">
+
+Ask questions about the Face Mask Detection project...
+
+</div>
+
+
+
+<input
+
+id="userInput"
+
+placeholder="Ask about YOLO, OpenCV, FastAPI..."
+
+>
+
+
+<button onclick="sendQuery()">
+
+Ask
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+async function sendQuery(){
+
+
+    const input =
+    document.getElementById(
+        "userInput"
+    );
+
+
+    const question =
+    input.value.trim();
+
+
+
+    if(question==="")
+        return;
+
+
+
+    const chat =
+    document.getElementById(
+        "chatOutput"
+    );
+
+
+
+    chat.innerHTML += `
+
+    <div class="chat-message user">
+
+    <b>You:</b>
+
+    <br>
+
+    ${question}
+
+    </div>
+
+    `;
+
+
+
+    input.value="";
+
+
+
+    const formData =
+    new FormData();
+
+
+    formData.append(
+        "question",
+        question
+    );
+
+
+
+    try{
+
+
+        const response =
+        await fetch(
+            "/chat",
+            {
+
+            method:"POST",
+
+            body:formData
+
+            }
+
+        );
+
+
+
+        const data =
+        await response.json();
+
+
+
+        let answer =
+        data.answer;
+
+
+
+        /*
+          Preserve AI formatting
+        */
+
+
+        answer =
+        answer
+        .replace(
+            /\*\*(.*?)\*\*/g,
+            "<b>$1</b>"
+        )
+        .replace(
+            /\n/g,
+            "<br>"
+        );
+
+
+
+        chat.innerHTML += `
+
+
+        <div class="chat-message ai">
+
+
+        <b>
+        🤖 AI:
+        </b>
+
+
+        <br><br>
+
+
+        ${answer}
+
+
+        </div>
+
+
+        `;
+
+
+
+        chat.scrollTop =
+        chat.scrollHeight;
+
+
+
+    }
+
+
+    catch(error){
+
+
+        chat.innerHTML += `
+
+
+        <div class="chat-message ai">
+
+        <b>
+        Error:
+        </b>
+
+        Cannot connect to AI server.
+
+
+        </div>
+
+
+        `;
+
+
+    }
+
+
+}
+let cameraRunning = false;
+
+
+
+function startCamera(){
+
+
+    const camera =
+    document.getElementById(
+        "cameraFeed"
+    );
+
+
+    if(!cameraRunning){
+
+
+        camera.src =
+        "/video_feed";
+
+
+        cameraRunning = true;
+
+
+    }
+
+}
+
+
+
+
+function stopCamera(){
+
+
+    const camera =
+    document.getElementById(
+        "cameraFeed"
+    );
+
+
+    camera.src = "";
+
+
+    cameraRunning = false;
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
+
+from "requirementfmdv2fastapi.txt" file
+fastapi
+uvicorn
+opencv-python
+ultralytics
+python-docx
+scikit-learn
+groq
+python-dotenv
+
+
+from "data.yaml" file
+
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['Mask', 'Mask Incorrect', 'NoMask']
+
+roboflow:
+  workspace: haashim
+  project: face-mask-gkvor
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/haashim/face-mask-gkvor/dataset/1
+
+  api taken from groq api Cloud
+
+  what is the difference between fast api and groq api cloud
+
+FastAPI and Groq API Cloud are two completely different types of APIs that solve different problems in your project.
+
+In your Face Mask Detection + AI Chat system:
+
+                User Browser
+                     |
+                     |
+              FastAPI (Your Server)
+                     |
+        -----------------------------
+        |                           |
+   YOLO Model                 Groq API Cloud
+   (Local AI)                 (Cloud AI)
+        |                           |
+ Face Detection              LLM Response
+ OpenCV                      Llama Model
+ Webcam                      Text Generation
+1. FastAPI
+
+FastAPI is a Python web framework.
+
+It allows you to create your own backend server and expose your Python functions through URLs (endpoints).
+
+Example from your project:
+
+@app.post("/detect")
+async def detect_face_mask():
+
+This creates an API endpoint:
+
+http://127.0.0.1:8000/detect
+
+Your browser sends an image:
+
+Browser
+   |
+   |
+ POST /detect
+   |
+   |
+ FastAPI
+   |
+   |
+ YOLO model
+   |
+   |
+ Detection result
+
+FastAPI is responsible for:
+
+Task	Example
+Receiving images	Upload from HTML
+Receiving questions	Chat input
+Running Python code	YOLO inference
+Returning results	JSON/Base64
+Serving frontend	index_live.html
+Managing routes	/detect, /chat
+
+FastAPI runs on your computer/server.
+
+Example:
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return "Hello"
+
+Your computer becomes a web server.
+
+2. Groq API Cloud
+
+Groq API Cloud is a remote AI service.
+
+It provides access to large language models (LLMs) such as:
+
+Llama models
+Other language models
+
+You do not run these models on your laptop.
+
+Your code sends a request:
+
+Your FastAPI Server
+        |
+        |
+        | Question:
+        | "Explain YOLO"
+        |
+        ↓
+   Groq Cloud Server
+
+        |
+        |
+   Llama Model
+
+        |
+        |
+        ↓
+
+Answer returned
+
+Example from your code:
+
+client = Groq(
+    api_key=GROQ_API_KEY
+)
+
+
+response = client.chat.completions.create(
+
+    model="llama-3.3-70b-versatile",
+
+    messages=messages
+
+)
+
+Groq handles:
+
+Task	Example
+Running LLM	Llama 3.3
+Understanding text	Questions
+Generating answers	AI response
+High-speed inference	Cloud hardware
+In your project specifically
+FastAPI handles the application logic:
+
+Example:
+
+User uploads image:
+
+index_live.html
+       |
+       |
+FastAPI /video_feed
+       |
+       |
+OpenCV
+       |
+       |
+YOLO
+       |
+       |
+Detection result
+
+FastAPI is the controller.
+
+Groq handles only the chatbot:
+
+Example:
+
+User asks:
+
+"What dataset was used?"
+
+Flow:
+
+index_live.html
+
+        |
+
+FastAPI /chat
+
+        |
+
+Retrieve document using TF-IDF
+
+        |
+
+Send context + question
+
+        |
+
+Groq API
+
+        |
+
+Llama model
+
+        |
+
+Answer
+
+
+Groq is the language intelligence provider.
+
+Simple analogy
+
+Imagine a restaurant:
+
+Component	Role
+FastAPI	Waiter taking orders and delivering food
+YOLO	Chef cooking detection results
+Groq API	Expert consultant answering questions
+Browser	Customer
+
+FastAPI connects everything together.
+
+Groq only provides AI language answers.
+
+Can FastAPI replace Groq?
+
+No.
+
+FastAPI cannot generate intelligent answers by itself.
+
+Without Groq:
+
+User:
+"Explain YOLO architecture"
+
+FastAPI:
+"I only handle requests."
+Can Groq replace FastAPI?
+
+No.
+
+Groq cannot:
+
+access your webcam
+run YOLO
+serve your HTML
+manage your files
+
+It only receives text and returns text.
+
+In your final architecture:
+                 Browser
+                    |
+                    |
+              FastAPI Server
+                    |
+        -------------------------
+        |                       |
+      YOLO                    Groq API
+        |                       |
+ Face Detection             AI Chat
+ OpenCV                     Llama Model
+ Webcam                     Cloud
+
+So:
+
+FastAPI = your application's backend framework.
+Groq API = external cloud AI service used by your chatbot.
+
+yolo model train in cloab along with the dataset taken from roboflow(images and labels)
+from yolo model colab file
+
+from google.colab import drive #since not all computer will have gpu to run so that local computer will  be damaged becuase runiing it multiple times
+#epoches is the number of times a model should run
+drive.mount('/content/drive') #change the right side connect to t4 gpu
+
+!pip install ultralytics
+
+from ultralytics import YOLO
+import os
+
+data_yaml_path='/content/drive/My Drive/fmdv2/data.yaml' # manually type (see from google drive)
+                                                                         #till MyDrive is common for all
+                                                                           # then type the folder name/yaml file name
+
+epochs=50
+imgsz_size=640
+batch_size=16
+box_size=7.5      # Box loss gain for precise bounding boxes
+cls_size=1.0      # Class loss gain
+patience_size=10  # Early stopping to prevent overfitting
+device_size='0'      # Use the first available GPU
+
+if not os.path.exists(data_yaml_path):
+  print(f"Error: data.yaml file not found at {data_yaml_path}. Please create it with your dataset configuration.")
+else:
+  model=YOLO('yolov8m.pt')
+
+  results = model.train(
+      data=data_yaml_path,
+      epochs=epochs,
+      imgsz=imgsz_size,
+      batch=batch_size,
+      box=box_size,      # Box loss gain for precise bounding boxes
+      cls=cls_size,      # Class loss gain
+      patience=patience_size,  # Early stopping to prevent overfitting
+      device=device_size
+  )
+
+  print("Training process initated. Please monitor the output for progress and completion.")
+
+  import os
+from shutil import copyfile
+
+save_path = "/content/drive/My Drive/fmdv2/fmdv2.pt"
+
+if 'results' in locals() and results is not None:
+  trained_model_path = os.path.join(results.save_dir, 'weights','best.pt')
+
+  if os.path.exists(trained_model_path):
+    copyfile(trained_model_path,save_path)
+    print(f"Trained model saved to:{save_path}")
+  else:
+    print(f"Could not find trained model weights at {trained_model_path}.Please check training output.")
+    print("It's possible training was interrupted or did not complete successfully.")
+
+else:
+  print("Training results object not found or training did not complete. Please ensure the training cell ran successfully.")
+  print("If you have already trained a model and just want to save it, load the model first.")
+  print("Example:'model = YOLO('path/to/your/best.pt')'then 'model.export(format='torchscript',filename=save_path)'")
+
+  

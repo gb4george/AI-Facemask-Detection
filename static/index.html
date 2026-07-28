@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Face Mask Detection + AI Chat (FastAPI)</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fb;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .column {
+      flex: 1 1 0;
+      min-width: 320px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      box-sizing: border-box;
+    }
+    .column h2 {
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+    .column p {
+      margin-top: 0;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin-top: 6px;
+    }
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    input[type="file"] {
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    }
+    button:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+    .output-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      min-height: 40px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+    .error {
+      color: #b91c1c;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: #ffffff;
+      margin-right: 6px;
+    }
+    .badge-mask { background-color: #16a34a; }         /* green */
+    .badge-incorrect { background-color: #f97316; }    /* orange */
+    .badge-nomask { background-color: #dc2626; }       /* red */
+    ul.det-list {
+      padding-left: 16px;
+      margin: 6px 0 0 0;
+    }
+    ul.det-list li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Face Mask Detection + AI Chat</h1>
+  <div class="subtitle">
+    YOLO-based mask detection and Groq-powered project tutor, served via FastAPI.
+  </div>
+
+  <div class="container">
+    <!-- LEFT: Detection -->
+    <div class="column">
+      <h2>Image Detection</h2>
+      <p>Upload a frame or image; backend will run YOLO and return detections.</p>
+
+      <input type="file" id="imageInput" accept="image/*"><br>
+
+      <label>
+        Conf:
+        <input type="number" id="conf" value="0.5" step="0.05" min="0.1" max="0.9">
+      </label>
+      <label>
+        IOU:
+        <input type="number" id="iou" value="0.45" step="0.05" min="0.3" max="0.7">
+      </label>
+      <label>
+        <input type="checkbox" id="enhance" checked>
+        Enhance low-light (CLAHE)
+      </label>
+
+      <button onclick="sendDetect()">Run Detection</button>
+      <div id="detectError" class="error"></div>
+
+      <h3>Detections</h3>
+      <div id="detectOutput" class="output-box"></div>
+    </div>
+
+    <!-- RIGHT: Chat -->
+    <div class="column">
+      <h2>Project AI Chat</h2>
+      <p>Ask questions about the Face Mask Detection project.</p>
+
+      <textarea id="question" rows="4"
+        placeholder="Ask a technical question (e.g., how YOLO works, training setup)..."></textarea>
+
+      <button onclick="sendChat()">Ask</button>
+      <div id="chatError" class="error"></div>
+
+      <h3>Answer</h3>
+      <div id="chatOutput" class="output-box"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    async function sendDetect() {
+      const fileInput = document.getElementById("imageInput");
+      const errorDiv = document.getElementById("detectError");
+      const outputDiv = document.getElementById("detectOutput");
+      errorDiv.textContent = "";
+      outputDiv.textContent = "";
+
+      if (!fileInput.files[0]) {
+        errorDiv.textContent = "Please select an image first.";
+        return;
+      }
+
+      const conf = document.getElementById("conf").value;
+      const iou = document.getElementById("iou").value;
+      const enhance = document.getElementById("enhance").checked;
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("conf", conf);
+      formData.append("iou", iou);
+      formData.append("enhance", enhance);
+
+      try {
+        const resp = await fetch(`${API_BASE}/detect`, {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("Detect status:", resp.status);
+        if (!resp.ok) {
+          const text = await resp.text();
+          errorDiv.textContent = `Error ${resp.status}: ${text}`;
+          return;
+        }
+
+        const data = await resp.json();
+        console.log("Detect data:", data);
+
+        if (!data.detections || data.detections.length === 0) {
+          outputDiv.textContent = "No faces detected.";
+          return;
+        }
+
+        // Build a nicer HTML list
+        const ul = document.createElement("ul");
+        ul.className = "det-list";
+        for (const det of data.detections) {
+          const li = document.createElement("li");
+          const badge = document.createElement("span");
+          badge.className =
+            "badge " +
+            (det.label === "Mask"
+              ? "badge-mask"
+              : det.label === "Mask Incorrect"
+              ? "badge-incorrect"
+              : "badge-nomask");
+          badge.textContent = det.label;
+
+          const text = document.createTextNode(
+            ` score: ${det.score.toFixed(2)}  ` +
+            `[x1=${det.bbox[0].toFixed(0)}, y1=${det.bbox[1].toFixed(0)}, ` +
+            `x2=${det.bbox[2].toFixed(0)}, y2=${det.bbox[3].toFixed(0)}]`
+          );
+
+          li.appendChild(badge);
+          li.appendChild(text);
+          ul.appendChild(li);
+        }
+
+        outputDiv.innerHTML = "";
+        outputDiv.appendChild(ul);
+
+      } catch (err) {
+        console.error("Detect error:", err);
+        errorDiv.textContent = `Request failed: ${err}`;
+      }
+    }
+
+    async function sendChat() {
+      const questionEl = document.getElementById("question");
+      const errorDiv = document.getElementById("chatError");
+      const outputDiv = document.getElementById("chatOutput");
+      errorDiv.textContent = "";
+      outputDiv.textContent = "";
+
+      const question = questionEl.value.trim();
+      if (!question) {
+        errorDiv.textContent = "Please type a question.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("question", question);
+
+      try {
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("Chat status:", resp.status);
+        if (!resp.ok) {
+          const text = await resp.text();
+          errorDiv.textContent = `Error ${resp.status}: ${text}`;
+          return;
+        }
+
+        const data = await resp.json();
+        console.log("Chat data:", data);
+        outputDiv.textContent = data.answer || "(No answer returned.)";
+
+      } catch (err) {
+        console.error("Chat error:", err);
+        errorDiv.textContent = `Request failed: ${err}`;
+      }
+    }
+  </script>
+</body>
+</html>

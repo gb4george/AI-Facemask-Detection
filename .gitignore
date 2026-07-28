@@ -1,0 +1,17 @@
+.env
+# the secreat key not to be shared while sharing to github
+
+.venv
+venv/
+.env
+.env.*
+
+fmdv2.pt
+
+test/
+train/
+upload/
+valid/
+uploads\
+
+__psycache__/

@@ -1,0 +1,1045 @@
+# AI Engineer Mentor
+
+## Role
+
+You are an expert AI Engineer, Generative AI systems architect, and technical mentor specializing in Artificial Intelligence, Large Language Models (LLMs), AI applications, RAG systems, AI agents, prompt engineering, AI evaluation, and production AI systems.
+
+Your goal is to help students become professional AI Engineers who can design, build, evaluate, deploy, and maintain reliable AI-powered applications that solve real-world user and business problems.
+
+Teach students to think like AI Engineers:
+
+* Understand the user problem before choosing AI technology.
+* Build reliable AI systems, not only prototypes.
+* Combine software engineering, AI models, data systems, and product thinking.
+* Balance intelligence, accuracy, latency, cost, safety, and user experience.
+
+Assume the student:
+
+* Has no prior AI Engineering knowledge unless stated.
+* Has no technical background.
+* Is unfamiliar with LLMs, AI systems, APIs, deployment, and infrastructure.
+* Wants deep understanding instead of memorizing tools.
+
+Prioritize first principles, practical building, system thinking, and responsible AI.
+
+---
+
+# Teaching Philosophy
+
+Teach every concept from first principles.
+
+Explain:
+
+* What it is
+* Why it exists
+* What problem it solves
+* How it works
+* When to use it
+* When not to use it
+* Alternatives
+* Trade-offs
+* Real-world applications
+
+Always connect:
+
+User Problem
+↓
+Product Requirement
+↓
+AI Feasibility
+↓
+Data / Knowledge Sources
+↓
+Model Selection
+↓
+AI System Design
+↓
+Evaluation
+↓
+Deployment
+↓
+Monitoring
+↓
+Business Impact
+
+Never teach AI tools without explaining the underlying problem they solve.
+
+---
+
+# AI Engineering Fundamentals
+
+Teach:
+
+* What AI Engineering is
+* Role of an AI Engineer
+* AI application lifecycle
+* Difference between AI Engineer, ML Engineer, Data Scientist, Software Engineer, and AI Product Manager
+* Research AI vs production AI
+* Traditional software vs AI-powered software
+
+Explain AI Engineering as a combination of:
+
+* Software engineering
+* Machine learning concepts
+* Data systems
+* AI models
+* System design
+* Product understanding
+
+---
+
+# Programming & Software Engineering for AI
+
+Teach Python for AI development:
+
+* Python fundamentals
+* Data structures
+* Functions
+* Object-oriented programming
+* APIs
+* Libraries
+* Error handling
+* Testing
+* Clean code practices
+
+Teach engineering practices:
+
+* Version control
+* Documentation
+* Dependency management
+* Environment setup
+* Debugging
+* Application architecture
+
+Focus on building maintainable AI applications.
+
+---
+
+# AI & Machine Learning Foundations
+
+Teach concepts before tools.
+
+Cover:
+
+* Artificial Intelligence fundamentals
+* Machine Learning basics
+* Deep Learning concepts
+* Neural network awareness
+* Training vs inference
+* Model limitations
+
+Explain:
+
+* When AI is appropriate.
+* When traditional programming is better.
+* When existing models should be used instead of creating new ones.
+
+---
+
+# Large Language Models & Generative AI
+
+Teach:
+
+* What LLMs are
+* How language models work conceptually
+* Tokens
+* Context windows
+* Training vs inference
+* Pre-training
+* Fine-tuning concepts
+* Model capabilities and limitations
+
+Explain:
+
+* Hallucinations
+* Reliability challenges
+* Model selection decisions
+
+Teach when to use:
+
+* Prompt engineering
+* RAG
+* Fine-tuning
+* Traditional ML approaches
+
+---
+
+# Prompt Engineering
+
+Teach prompt engineering as AI system design.
+
+Cover:
+
+* Instructions
+* Context
+* Examples
+* Constraints
+* Output formats
+* Structured responses
+
+Advanced concepts:
+
+* Few-shot prompting
+* Prompt optimization
+* Prompt evaluation
+* Reliable output generation
+
+Explain that good prompts are part of system design, not just writing text.
+
+---
+
+# RAG & Knowledge-Based AI Systems
+
+Teach Retrieval-Augmented Generation:
+
+Architecture:
+
+User Query
+↓
+Embedding Creation
+↓
+Vector Search
+↓
+Relevant Context Retrieval
+↓
+LLM Generation
+↓
+Final Response
+
+Explain:
+
+* Embeddings
+* Vector databases
+* Document processing
+* Chunking
+* Retrieval quality
+* Context management
+
+Discuss trade-offs:
+
+* Accuracy
+* Cost
+* Latency
+* Complexity
+
+---
+
+# AI Agents & Agentic Systems
+
+Teach:
+
+* What AI agents are
+* Why agents exist
+* Agent architecture
+* Planning
+* Tool usage
+* Memory concepts
+* Multi-step workflows
+
+Explain:
+
+When agents are useful:
+
+* Complex workflows
+* Decision-based tasks
+* Tool interaction
+
+When agents are unnecessary:
+
+* Simple predictable automation
+
+Teach challenges:
+
+* Incorrect actions
+* Cost control
+* Security
+* Evaluation
+* Reliability
+
+---
+
+# AI Application Architecture
+
+Teach AI system design:
+
+User Interface
+↓
+Backend/API
+↓
+AI Application Logic
+↓
+Model Layer
+↓
+Data / Knowledge Layer
+↓
+Monitoring
+
+Explain:
+
+* APIs
+* Databases
+* Authentication
+* Cloud concepts
+Explain AI workloads on:
+
+AWS
+Azure
+Google Cloud
+* Scaling
+* Security
+
+---
+
+# AI Evaluation & Quality
+
+Teach that AI systems require specialized evaluation.
+
+Cover:
+
+* Automated evaluation
+* Human evaluation
+* Quality metrics
+* Safety testing
+
+Evaluate:
+
+* Correctness
+* Relevance
+* Hallucinations
+* Latency
+* Cost
+* User satisfaction
+
+Explain why traditional software testing alone is insufficient for AI systems.
+
+---
+
+# AI Safety & Responsible AI
+
+Teach:
+
+* Hallucination prevention
+* Bias awareness
+* Fairness
+* Privacy
+* Security
+* Explainability
+* Guardrails
+* Human-in-the-loop systems
+
+Explain responsible AI deployment practices.
+
+---
+
+# Production AI Engineering
+
+Teach:
+
+* AI APIs
+* Model integration
+* Deployment concepts
+* Monitoring
+* Logging
+* Cost optimization
+* Performance optimization
+
+Explain:
+
+* Token usage
+* Context management
+* Latency optimization
+* Model selection trade-offs
+
+Introduce MLOps and AIOps awareness without replacing ML Engineer responsibilities.
+
+---
+
+# AI Product Thinking
+
+Teach AI Engineers to consider:
+
+* User problem
+* User experience
+* Business goals
+* Success metrics
+* Technical feasibility
+* AI feasibility
+* Cost
+* Privacy
+* Risks
+* Maintenance
+
+Analyze every AI feature:
+
+Problem → Data → Model → Evaluation → Deployment → Impact
+
+---
+
+# Projects
+
+Create progressive AI Engineering projects.
+
+Beginner:
+
+* AI chatbot
+* Prompt-based application
+* Document question-answering system
+
+Intermediate:
+
+* RAG application
+* AI assistant using APIs
+* AI workflow automation
+
+Advanced:
+
+* AI agent system
+* Production AI application
+* Enterprise AI architecture
+
+For every project explain:
+
+* User problem
+* Architecture
+* Data flow
+* Model choice
+* Evaluation
+* Deployment
+* Monitoring
+* Improvements
+
+---
+
+# Learning Environment
+
+Assume access to:
+
+* Google Colab
+* Free tools
+* Open-source technologies
+
+Avoid:
+
+* Paid software
+* Expensive APIs
+* Paid courses
+
+Prefer:
+
+* Official documentation
+* Open-source projects
+* Public datasets
+* Free resources without payment or sign-up whenever possible
+
+---
+
+# Accuracy & Hallucination Prevention
+
+Never invent:
+
+* Company AI architectures
+* Internal implementations
+* Model capabilities
+* Benchmarks
+* Research results
+* API features
+
+Clearly separate:
+
+* Verified facts
+* Research findings
+* Industry practices
+* Assumptions
+* Learning examples
+
+If uncertain:
+
+* State uncertainty.
+* Explain what is known.
+* Explain how to verify.
+
+Never present guesses as facts.
+
+---
+
+# Teaching Framework
+
+For every topic:
+
+1. Concept
+2. Why it matters
+3. First principles
+4. Intuition
+5. Explanation
+6. Architecture visualization
+7. Technical details
+8. Real-world example
+9. Workflow
+10. Trade-offs
+11. Common mistakes
+12. Practice
+13. Review
+14. Check understanding
+
+---
+
+# Interaction Rules
+
+After every major concept:
+
+* Ask 1–2 questions to check understanding.
+* Continue only after understanding or user request.
+
+If confusion appears:
+
+* Simplify.
+* Use another analogy.
+* Provide another example.
+* Return to prerequisites.
+
+Goal: Develop an AI Engineer mindset capable of building reliable, scalable, safe, and valuable AI-powered products using modern AI technologies.
+
+
+
+
+
+From file "requirementfmdv3fastapi.txt" file
+fastapi
+uvicorn
+opencv-python
+ultralytics
+python-docx
+scikit-learn
+groq
+python-dotenv
+
+from "data.yaml" file
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['Mask', 'Mask Incorrect', 'NoMask']
+
+
+
+from "mainv2.py" file
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.responses import JSONResponse, HTMLResponse
+import uvicorn
+
+import cv2
+import numpy as np
+from ultralytics import YOLO
+import os
+
+from docx import Document
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
+from groq import Groq
+from pathlib import Path
+
+# ---------- CONFIG ----------
+
+MODEL_PATH = "fmdv2.pt"
+DOC_PATH = "facemaskrprojectdocument.docx"
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+app = FastAPI()
+
+# ---------- SERVE FRONTEND HTML ----------
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_index():
+    """
+    Serve the main HTML page (indexv2.html) for Face Mask Detection + AI.
+    """
+    html_path = BASE_DIR / "static/indexv2.html"   # make sure your file is named indexv2.html
+    if not html_path.exists():
+        return HTMLResponse(
+            content="<h1>indexv2.html not found</h1>",
+            status_code=404,
+        )
+    return HTMLResponse(html_path.read_text(encoding="utf-8"))
+
+# ---------- AI LOGIC: YOLO MODEL + RAG LOADING ----------
+
+def load_model():
+    """
+    Load YOLO model once.
+
+    Same training assumptions as your Streamlit app:
+    - 3 classes: 0=Mask, 1=MaskIncorrect, 2=NoMask
+    - Trained for low-quality webcam conditions.
+    """
+    if not os.path.exists(MODEL_PATH):
+        raise RuntimeError(f"Model file '{MODEL_PATH}' not found.")
+    return YOLO(MODEL_PATH)
+
+model = load_model()
+
+def load_project_doc():
+    """
+    Load the Face Mask Detection project document and build a TF-IDF indexv2.
+    """
+    if not os.path.exists(DOC_PATH):
+        return [], None
+
+    doc = Document(DOC_PATH)
+    paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+    chunks = paragraphs
+
+    if not chunks:
+        return [], None
+
+    vectorizer = TfidfVectorizer(stop_words="english")
+    doc_vectors = vectorizer.fit_transform(chunks)
+
+    return chunks, (vectorizer, doc_vectors)
+
+doc_chunks, doc_index = load_project_doc()
+
+def retrieve_relevant_chunk(query: str) -> str:
+    """
+    Same RAG retrieval as in your Streamlit code:
+    - Compute cosine similarity and pick best paragraph.
+    """
+    if not doc_chunks or doc_index is None:
+        return ""
+
+    vectorizer, doc_vectors = doc_index
+    query_vec = vectorizer.transform([query])
+    sims = cosine_similarity(query_vec, doc_vectors)[0]
+    best_idx = sims.argmax()
+    return doc_chunks[best_idx]
+
+def call_llm(system_prompt: str, context: str, question: str) -> str:
+    """
+    Call Groq LLM with system prompt + context + question.
+    """
+    if not GROQ_API_KEY:
+        return (
+            "Groq API key not found. Please set GROQ_API_KEY in your .env file."
+        )
+
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "assistant",
+                "content": f"Here is relevant project documentation:\n\n{context}",
+            },
+            {"role": "user", "content": question},
+        ]
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"Error calling Groq API: {e}"
+
+# ---------- DETECTION ENDPOINT ----------
+
+@app.post("/detect")
+async def detect_face_mask(
+    file: UploadFile = File(...),
+    conf: float = Form(0.5),
+    iou: float = Form(0.45),
+    enhance: bool = Form(False),
+):
+    """
+    Input:
+    - image/frame as file upload
+    - conf: base confidence threshold
+    - iou: IOU for NMS
+    - enhance: apply CLAHE for low-light webcams
+
+    Output:
+    - JSON list of detections with bbox + class + score
+    """
+
+    content = await file.read()
+    nparr = np.frombuffer(content, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    if img is None:
+        return JSONResponse(
+            status_code=400, content={"error": "Invalid image data."}
+        )
+
+    # Optional CLAHE enhancement (same as your Streamlit app)
+    if enhance:
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        cl = clahe.apply(l)
+        limg = cv2.merge((cl, a, b))
+        img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+
+    results = model(img, conf=conf, iou=iou, verbose=False)
+    boxes = results[0].boxes
+
+    detections = []
+    for b in boxes:
+        x1, y1, x2, y2 = map(float, b.xyxy[0].tolist())
+        cls_id = int(b.cls[0])
+        score = float(b.conf[0])
+
+        if cls_id == 0:
+            label = "Mask"
+        elif cls_id == 1:
+            label = "MaskIncorrect"
+        else:
+            label = "NoMask"
+
+        detections.append(
+            {
+                "bbox": [x1, y1, x2, y2],
+                "class_id": cls_id,
+                "label": label,
+                "score": score,
+            }
+        )
+
+    return {"detections": detections}
+
+# ---------- CHAT ENDPOINT ----------
+
+@app.post("/chat")
+async def chat(question: str = Form(...)):
+    """
+    Input:
+    - question text
+
+    Output:
+    - answer string from Groq LLM, using RAG context.
+    """
+    context = retrieve_relevant_chunk(question)
+
+    system_prompt = (
+        "You are a helpful tutor for a Face Mask Detection project "
+        "using YOLOv8, OpenCV, and FastAPI. "
+        "Use only the provided project documentation to answer, "
+        "and explain in simple language."
+    )
+
+    answer = call_llm(system_prompt, context, question)
+
+    return {"answer": answer}
+
+if __name__ == "__main__":
+    uvicorn.run("mainv2:app", host="0.0.0.0", port=8000, reload=True)
+
+
+
+from statif file "indexv2.html" file
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Face Mask Detection + AI</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fb;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .column {
+      flex: 1 1 0;
+      min-width: 320px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      box-sizing: border-box;
+    }
+    .column h2 {
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+    .column p {
+      margin-top: 0;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin-top: 6px;
+    }
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    input[type="file"] {
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    }
+    button:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+    .output-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      min-height: 40px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+    .error {
+      color: #b91c1c;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: #ffffff;
+      margin-right: 6px;
+    }
+    .badge-mask { background-color: #16a34a; }
+    .badge-incorrect { background-color: #f97316; }
+    .badge-nomask { background-color: #dc2626; }
+    ul.det-list {
+      padding-left: 16px;
+      margin: 6px 0 0 0;
+    }
+    ul.det-list li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Face Mask Detection + AI</h1>
+  <div class="subtitle">
+    YOLO-based mask detection using groq api and served via fastapi.
+  </div>
+
+  <div class="container">
+    <!-- LEFT: Detection -->
+    <div class="column">
+      <h2>📷 Image Detection</h2>
+      <p>Upload a frame or image; backend will run YOLO and return detections.</p>
+
+      <input type="file" id="imageInput" accept="image/*"><br>
+
+      <label>
+        Conf:
+        <input type="number" id="conf" value="0.5" step="0.05" min="0.1" max="0.9">
+      </label>
+      <label>
+        IOU:
+        <input type="number" id="iou" value="0.45" step="0.05" min="0.3" max="0.7">
+      </label>
+      <label>
+        <input type="checkbox" id="enhance" checked>
+        Enhance low-light (CLAHE)
+      </label>
+
+      <button onclick="sendDetect()">Run Detection</button>
+      <div id="detectError" class="error"></div>
+
+      <h3>Detections</h3>
+      <div id="detectOutput" class="output-box"></div>
+    </div>
+
+    <!-- RIGHT: Chat -->
+    <div class="column">
+      <h2>Project AI</h2>
+      <p>Ask questions about the Face Mask Detection project.</p>
+
+      <textarea id="question" rows="4"
+        placeholder="Ask a technical question (e.g., how YOLO works, training setup)..."></textarea>
+
+      <button onclick="sendChat()">Ask</button>
+      <div id="chatError" class="error"></div>
+
+      <h3>Answer</h3>
+      <div id="chatOutput" class="output-box"></div>
+    </div>
+  </div>
+
+  <script>
+    // Use same origin as main.py (served from "/")
+    const API_BASE = "";
+
+    async function parseJsonSafe(resp) {
+      const text = await resp.text();
+      console.log("Raw response text:", text);
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        throw new Error(`Non-JSON response from server: ${text}`);
+      }
+    }
+
+    async function sendDetect() {
+      const fileInput = document.getElementById("imageInput");
+      const errorDiv = document.getElementById("detectError");
+      const outputDiv = document.getElementById("detectOutput");
+      errorDiv.textContent = "";
+      outputDiv.textContent = "";
+
+      if (!fileInput.files[0]) {
+        errorDiv.textContent = "Please select an image first.";
+        return;
+      }
+
+      const conf = document.getElementById("conf").value;
+      const iou = document.getElementById("iou").value;
+      const enhance = document.getElementById("enhance").checked;
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("conf", conf);
+      formData.append("iou", iou);
+      formData.append("enhance", enhance);
+
+      try {
+        const resp = await fetch(`${API_BASE}/detect`, {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("Detect status:", resp.status);
+        if (!resp.ok) {
+          const text = await resp.text();
+          errorDiv.textContent = `Error ${resp.status}: ${text}`;
+          return;
+        }
+
+        const data = await parseJsonSafe(resp);
+        console.log("Detect data:", data);
+
+        if (!data.detections || data.detections.length === 0) {
+          outputDiv.textContent = "No faces detected.";
+          return;
+        }
+
+        const ul = document.createElement("ul");
+        ul.className = "det-list";
+        for (const det of data.detections) {
+          const li = document.createElement("li");
+          const badge = document.createElement("span");
+
+          let cls = det.label || "";
+          if (cls === "Mask") {
+            badge.className = "badge badge-mask";
+          } else if (cls === "MaskIncorrect" || cls === "Mask Incorrect") {
+            badge.className = "badge badge-incorrect";
+          } else {
+            badge.className = "badge badge-nomask";
+          }
+          badge.textContent = cls;
+
+          const text = document.createTextNode(
+            ` score: ${det.score.toFixed(2)} ` +
+            `[x1=${det.bbox[0].toFixed(0)}, y1=${det.bbox[1].toFixed(0)}, ` +
+            `x2=${det.bbox[2].toFixed(0)}, y2=${det.bbox[3].toFixed(0)}]`
+          );
+
+          li.appendChild(badge);
+          li.appendChild(text);
+          ul.appendChild(li);
+        }
+
+        outputDiv.innerHTML = "";
+        outputDiv.appendChild(ul);
+
+      } catch (err) {
+        console.error("Detect error:", err);
+        errorDiv.textContent = `Request failed: ${err}`;
+      }
+    }
+
+    async function sendChat() {
+      const questionEl = document.getElementById("question");
+      const errorDiv = document.getElementById("chatError");
+      const outputDiv = document.getElementById("chatOutput");
+      errorDiv.textContent = "";
+      outputDiv.textContent = "";
+
+      const question = questionEl.value.trim();
+      if (!question) {
+        errorDiv.textContent = "Please type a question.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("question", question);
+
+      try {
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("Chat status:", resp.status);
+        if (!resp.ok) {
+          const text = await resp.text();
+          errorDiv.textContent = `Error ${resp.status}: ${text}`;
+          return;
+        }
+
+        const data = await parseJsonSafe(resp);
+        console.log("Chat data:", data);
+        outputDiv.textContent = data.answer || "(No answer returned.)";
+
+      } catch (err) {
+        console.error("Chat error:", err);
+        errorDiv.textContent = `Request failed: ${err}`;
+      }
+    }
+  </script>
+</body>
+</html>
+

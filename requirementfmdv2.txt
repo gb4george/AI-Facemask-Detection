@@ -1,0 +1,7 @@
+opencv-python
+ultralytics
+streamlit
+python-docx
+scikit-learn
+groq
+python-dotenv

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+opencv-python
+ultralytics
+python-docx
+scikit-learn
+groq
+python-dotenv

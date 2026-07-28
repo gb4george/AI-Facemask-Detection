@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+Live Face Mask Detection + AI Chat
+</title>
+
+
+<style>
+
+body{
+
+    background:#000;
+
+    color:white;
+
+    font-family:
+    'Segoe UI',
+    sans-serif;
+
+    margin:0;
+
+    height:100vh;
+
+    display:flex;
+
+}
+
+
+/* LEFT CAMERA SECTION */
+
+.left-panel{
+
+    flex:1.5;
+
+    padding:20px;
+
+    border-right:1px solid #333;
+
+}
+
+
+.right-panel{
+
+    flex:1;
+
+    padding:20px;
+
+    background:#0b0b0b;
+
+}
+
+
+
+h2{
+
+    color:#00ff88;
+
+}
+
+
+
+/* CAMERA DISPLAY */
+
+.camera-box{
+
+    background:#111;
+
+    border:2px solid #333;
+
+    border-radius:10px;
+
+    padding:15px;
+
+    text-align:center;
+
+}
+
+
+
+.camera-box img{
+
+    width:100%;
+
+    max-width:640px;
+
+    border-radius:8px;
+
+}
+
+
+
+/* STATUS */
+
+.status{
+
+    margin-top:15px;
+
+    padding:10px;
+
+    background:#111;
+
+    border-radius:6px;
+
+    color:#00ff88;
+
+}
+
+
+
+/* CHAT AREA */
+
+
+#chatOutput{
+
+    height:70vh;
+
+    overflow-y:auto;
+
+    background:#000;
+
+    border:1px solid #333;
+
+    padding:15px;
+
+    border-radius:8px;
+
+}
+
+
+
+input{
+
+    width:75%;
+
+    padding:12px;
+
+    margin-top:10px;
+
+    background:#222;
+
+    color:white;
+
+    border:1px solid #444;
+
+    border-radius:5px;
+
+}
+
+
+
+button{
+
+    width:20%;
+
+    padding:12px;
+
+    background:#00ff88;
+
+    color:black;
+
+    border:none;
+
+    border-radius:5px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+
+.chat-message{
+
+    margin:10px 0;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    line-height:1.6;
+
+    white-space:pre-wrap;
+
+}
+
+
+
+.user{
+
+    background:#003d2a;
+
+    text-align:right;
+
+}
+
+
+
+.ai{
+
+    background:#151515;
+
+    border:1px solid #333;
+
+}
+
+
+
+.ai b{
+
+    color:#00ff88;
+
+}
+.camera-box button{
+
+    width:40%;
+
+    margin:10px;
+
+    padding:12px;
+
+    background:#00ff88;
+
+    color:black;
+
+    border:none;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+.camera-box button:last-child{
+
+    background:#ff4444;
+
+    color:white;
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+
+<!-- ======================
+     LIVE DETECTION
+======================= -->
+
+
+<div class="left-panel">
+
+
+<h2>
+🎥 Live Face Mask Detection
+</h2>
+
+
+<div class="camera-box">
+
+
+<img
+
+id="cameraFeed"
+
+src=""
+
+alt="Camera Feed"
+
+>
+
+
+<br><br>
+
+
+<button onclick="startCamera()">
+
+▶ Start Webcam
+
+</button>
+
+
+<button onclick="stopCamera()">
+
+⏹ Stop Webcam
+
+</button>
+
+
+</div>
+
+
+
+<div class="status">
+
+🟢 Webcam Active
+
+<br>
+
+Model:
+YOLO Face Mask Detector
+
+<br>
+
+Resolution:
+640 × 480
+
+<br>
+
+Optimization:
+CLAHE + IoU Filtering
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- ======================
+     AI CHAT
+======================= -->
+
+
+<div class="right-panel">
+
+
+<h2>
+🤖 AI Project Assistant
+</h2>
+
+
+
+<div id="chatOutput">
+
+Ask questions about the Face Mask Detection project...
+
+</div>
+
+
+
+<input
+
+id="userInput"
+
+placeholder="Ask about YOLO, OpenCV, FastAPI..."
+
+>
+
+
+<button onclick="sendQuery()">
+
+Ask
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+async function sendQuery(){
+
+
+    const input =
+    document.getElementById(
+        "userInput"
+    );
+
+
+    const question =
+    input.value.trim();
+
+
+
+    if(question==="")
+        return;
+
+
+
+    const chat =
+    document.getElementById(
+        "chatOutput"
+    );
+
+
+
+    chat.innerHTML += `
+
+    <div class="chat-message user">
+
+    <b>You:</b>
+
+    <br>
+
+    ${question}
+
+    </div>
+
+    `;
+
+
+
+    input.value="";
+
+
+
+    const formData =
+    new FormData();
+
+
+    formData.append(
+        "question",
+        question
+    );
+
+
+
+    try{
+
+
+        const response =
+        await fetch(
+            "/chat",
+            {
+
+            method:"POST",
+
+            body:formData
+
+            }
+
+        );
+
+
+
+        const data =
+        await response.json();
+
+
+
+        let answer =
+        data.answer;
+
+
+
+        /*
+          Preserve AI formatting
+        */
+
+
+        answer =
+        answer
+        .replace(
+            /\*\*(.*?)\*\*/g,
+            "<b>$1</b>"
+        )
+        .replace(
+            /\n/g,
+            "<br>"
+        );
+
+
+
+        chat.innerHTML += `
+
+
+        <div class="chat-message ai">
+
+
+        <b>
+        🤖 AI:
+        </b>
+
+
+        <br><br>
+
+
+        ${answer}
+
+
+        </div>
+
+
+        `;
+
+
+
+        chat.scrollTop =
+        chat.scrollHeight;
+
+
+
+    }
+
+
+    catch(error){
+
+
+        chat.innerHTML += `
+
+
+        <div class="chat-message ai">
+
+        <b>
+        Error:
+        </b>
+
+        Cannot connect to AI server.
+
+
+        </div>
+
+
+        `;
+
+
+    }
+
+
+}
+let cameraRunning = false;
+
+
+
+function startCamera(){
+
+
+    const camera =
+    document.getElementById(
+        "cameraFeed"
+    );
+
+
+    if(!cameraRunning){
+
+
+        camera.src =
+        "/video_feed";
+
+
+        cameraRunning = true;
+
+
+    }
+
+}
+
+
+
+
+function stopCamera(){
+
+
+    const camera =
+    document.getElementById(
+        "cameraFeed"
+    );
+
+
+    camera.src = "";
+
+
+    cameraRunning = false;
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

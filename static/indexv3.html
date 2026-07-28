@@ -1,0 +1,113 @@
+<!-- Modified indexv2.html for a Black Background Theme -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mask Detection System</title>
+    <style>
+        /* CSS to implement the black background output */
+        body {
+            background-color: #000000; /* Pure Black Background */
+            color: #FFFFFF;           /* White text for contrast */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #1a1a1a; /* Dark gray for container depth */
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333333; /* Subtle border for visibility */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #00ff88; /* Matrix-style green for headers */
+            text-align: center;
+        }
+
+        .output-area {
+            background-color: #000000;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 200px;
+            overflow-y: auto;
+        }
+
+        button {
+            background-color: #00ff88;
+            color: #000000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #00cc6e;
+        }
+
+        input[type="file"], input[type="text"] {
+            background-color: #222222;
+            color: white;
+            border: 1px solid #444444;
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Face Mask Detection AI</h1>
+        
+        <!-- Detection Input Section [7] -->
+        <section>
+            <h3>Detection Endpoint</h3>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="detectMask()">Run Detection</button>
+        </section>
+
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+
+        <!-- Chat/RAG Input Section [4] -->
+        <section>
+            <h3>Ask the Project Assistant</h3>
+            <input type="text" id="chatInput" placeholder="Ask about mask protocols...">
+            <button onclick="askAI()">Submit Question</button>
+        </section>
+
+        <!-- The Main Output Area -->
+        <div class="output-area" id="outputArea">
+            <p>System Ready. Results will appear here...</p>
+        </div>
+    </div>
+
+    <script>
+        // Placeholder scripts connecting to the FastAPI /detect and /chat endpoints [4, 7]
+        async function detectMask() {
+            const output = document.getElementById('outputArea');
+            output.innerHTML = "Processing detection...";
+            // Logic to fetch from /detect goes here
+        }
+
+        async function askAI() {
+            const output = document.getElementById('outputArea');
+            output.innerHTML = "Retrieving knowledge...";
+            // Logic to fetch from /chat goes here
+        }
+    </script>
+</body>
+</html>
