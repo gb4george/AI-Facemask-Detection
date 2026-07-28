@@ -12,6 +12,6 @@ test/
 train/
 upload/
 valid/
-uploads\
+uploads/
 
 __psycache__/
